@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Админ-панель — Вячеслав Плаксин</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root{
+      --bg:#f7f4f1;
+      --card:#ffffff;
+      --ink:#07182d;
+      --muted:#66717f;
+      --blue:#0878dc;
+      --blue2:#005eb8;
+      --red:#d62828;
+      --red2:#b91f1f;
+      --green:#14965f;
+      --line:#e8e2dc;
+      --shadow:0 24px 70px rgba(7,24,45,.11);
+      --radius:28px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+      overflow-x:hidden;
+    }
+
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    button,input,textarea,select{font:inherit}
+    .wrap{width:min(1180px,calc(100% - 36px));margin:0 auto}
+
+    .top{
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:rgba(247,244,241,.94);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid var(--line);
+    }
+
+    .nav{
+      min-height:82px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:14px 0;
+    }
+
+    .brand strong{
+      display:block;
+      font-size:24px;
+      line-height:1;
+      letter-spacing:-.055em;
+      font-weight:950;
+    }
+
+    .brand span{
+      display:block;
+      margin-top:6px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.35;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      border:0;
+      border-radius:999px;
+      min-height:48px;
+      padding:12px 20px;
+      background:var(--blue);
+      color:white;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-weight:950;
+      cursor:pointer;
+      box-shadow:0 14px 30px rgba(8,120,220,.18);
+      transition:.22s;
+      white-space:nowrap;
+    }
+
+    .btn:hover{background:var(--blue2);transform:translateY(-1px)}
+    .btn.light{background:white;color:var(--blue);border:1px solid var(--line);box-shadow:none}
+    .btn.danger{background:var(--red);box-shadow:0 14px 30px rgba(214,40,40,.16)}
+    .btn.danger:hover{background:var(--red2)}
+    .btn.green{background:var(--green)}
+    .btn.small{min-height:42px;padding:10px 16px;font-size:14px}
+    .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+    .login-screen{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:30px 18px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(8,120,220,.12), transparent 34%),
+        radial-gradient(circle at 80% 10%, rgba(8,120,220,.08), transparent 30%),
+        var(--bg);
+    }
+
+    .login-card{
+      width:min(460px,100%);
+      background:white;
+      border:1px solid var(--line);
+      border-radius:32px;
+      padding:34px;
+      box-shadow:var(--shadow);
+    }
+
+    .login-card h1{
+      margin:0;
+      font-size:38px;
+      line-height:.95;
+      letter-spacing:-.07em;
+    }
+
+    .login-card p{color:var(--muted);line-height:1.5;margin:12px 0 24px}
+
+    .app{display:none}
+    .grid{
+      display:grid;
+      grid-template-columns:minmax(320px,.9fr) minmax(420px,1.1fr);
+      gap:22px;
+      padding:34px 0 70px;
+      align-items:start;
+    }
+
+    .panel{
+      background:white;
+      border:1px solid var(--line);
+      border-radius:30px;
+      padding:24px;
+      box-shadow:0 14px 38px rgba(7,24,45,.05);
+    }
+
+    .panel h2{
+      margin:0 0 20px;
+      font-size:32px;
+      line-height:1;
+      letter-spacing:-.06em;
+    }
+
+    .panel h3{
+      margin:30px 0 14px;
+      font-size:28px;
+      line-height:1;
+      letter-spacing:-.055em;
+    }
+
+    .field{margin-bottom:16px}
+    label{
+      display:block;
+      font-size:15px;
+      font-weight:950;
+      margin:0 0 8px;
+    }
+
+    input,textarea,select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      color:var(--ink);
+      padding:15px 16px;
+      outline:none;
+      transition:.18s;
+    }
+
+    input:focus,textarea:focus,select:focus{
+      border-color:rgba(8,120,220,.5);
+      box-shadow:0 0 0 4px rgba(8,120,220,.08);
+    }
+
+    textarea{
+      min-height:140px;
+      resize:vertical;
+      line-height:1.55;
+    }
+
+    .body-textarea{min-height:280px}
+    .hint{font-size:13px;color:var(--muted);line-height:1.4;margin-top:7px}
+
+    .form-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+
+    .status{
+      margin-top:14px;
+      min-height:24px;
+      color:var(--blue);
+      font-weight:900;
+      line-height:1.35;
+    }
+
+    .status.error{color:var(--red)}
+    .status.ok{color:var(--green)}
+
+    .list{
+      display:grid;
+      gap:12px;
+    }
+
+    .news-item{
+      display:grid;
+      grid-template-columns:110px 1fr;
+      gap:14px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:#fff;
+    }
+
+    .news-img{
+      width:110px;
+      height:86px;
+      border-radius:16px;
+      object-fit:cover;
+      background:#f1ece7;
+    }
+
+    .news-meta{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:850;
+      margin-bottom:4px;
+    }
+
+    .news-title{
+      font-size:17px;
+      line-height:1.15;
+      font-weight:950;
+      letter-spacing:-.035em;
+      margin-bottom:6px;
+    }
+
+    .news-excerpt{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.4;
+      margin-bottom:10px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .item-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:4px 9px;
+      border-radius:999px;
+      background:#eef6ff;
+      color:var(--blue);
+      font-size:12px;
+      font-weight:950;
+      margin-left:6px;
+    }
+
+    .consult-card{
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px;
+      background:#fff;
+      margin-bottom:12px;
+    }
+
+    .consult-card b{display:block;font-size:17px;margin-bottom:5px}
+    .consult-card p{margin:6px 0;color:var(--muted);line-height:1.45}
+    .consult-card small{color:var(--muted);font-weight:850}
+
+    .empty{
+      border:1px dashed var(--line);
+      border-radius:22px;
+      padding:20px;
+      color:var(--muted);
+      background:#fff;
+    }
+
+    .preview{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .preview img{
+      width:84px;
+      height:64px;
+      object-fit:cover;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#f1ece7;
+    }
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .tab{
+      border:1px solid var(--line);
+      background:white;
+      border-radius:999px;
+      min-height:42px;
+      padding:10px 16px;
+      cursor:pointer;
+      font-weight:950;
+      color:var(--muted);
+    }
+
+    .tab.active{
+      color:white;
+      background:var(--blue);
+      border-color:var(--blue);
+    }
+
+    @media(max-width:980px){
+      .grid{grid-template-columns:1fr}
+      .nav{align-items:flex-start;flex-direction:column}
+      .actions{justify-content:flex-start}
+    }
+
+    @media(max-width:620px){
+      .wrap{width:min(100% - 24px,1180px)}
+      .login-card{padding:24px;border-radius:26px}
+      .panel{padding:18px;border-radius:24px}
+      .panel h2{font-size:28px}
+      .grid{padding-top:22px}
+      .news-item{grid-template-columns:1fr}
+      .news-img{width:100%;height:180px}
+      .btn{width:100%}
+      .actions .btn{width:auto}
+    }
+  
+    /* ===== FIX: select/dropdown в стилистике сайта ===== */
+    select{
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      cursor:pointer;
+      background-color:#fff;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #0878dc 50%),
+        linear-gradient(135deg, #0878dc 50%, transparent 50%);
+      background-position:
+        calc(100% - 22px) 50%,
+        calc(100% - 15px) 50%;
+      background-size:7px 7px, 7px 7px;
+      background-repeat:no-repeat;
+      padding-right:48px;
+    }
+
+    select option{
+      color:#07182d;
+      background:#ffffff;
+      font-weight:800;
+    }
+
+  </style>
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <form class="login-card" id="loginForm">
+      <h1>Админ-панель</h1>
+      <p>Войдите, чтобы добавлять новости, редактировать публикации и смотреть заявки на консультацию.</p>
+
+      <div class="field">
+        <label>Логин</label>
+        <input name="login" autocomplete="username" value="admin" required>
+      </div>
+
+      <div class="field">
+        <label>Пароль</label>
+        <input name="password" type="password" autocomplete="current-password" placeholder="Введите пароль" required>
+      </div>
+
+      <button class="btn" type="submit">Войти</button>
+      <div class="status" id="loginStatus"></div>
+    </form>
+  </section>
+
+  <div class="app" id="app">
+    <header class="top">
+      <div class="wrap nav">
+        <div class="brand">
+          <strong>Админ-панель новостей</strong>
+          <span>Добавление даты, картинки новости, темы, текста статьи и дополнительных фотографий.</span>
+        </div>
+
+        <div class="actions">
+          <a class="btn light" href="https://rvtvtytatv-code.github.io/plaksin-pro1/" target="_blank" rel="noopener">Открыть сайт</a>
+          <a class="btn light" href="https://rvtvtytatv-code.github.io/plaksin-pro1/news.html" target="_blank" rel="noopener">Все новости</a>
+          <button class="btn danger" type="button" id="logoutBtn">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap grid">
+      <section class="panel">
+        <h2 id="formTitle">Новая публикация</h2>
+
+        <form id="newsForm">
+          <input type="hidden" name="oldSlug" id="oldSlug">
+
+          <div class="field">
+            <label>Дата новости</label>
+            <input name="date" id="date" type="date" required>
+          </div>
+
+          <div class="field">
+            <label>Заголовок</label>
+            <input name="title" id="title" placeholder="Введите заголовок" required>
+          </div>
+
+          <div class="field">
+            <label>Тема / рубрика</label>
+            <input name="topic" id="topic" placeholder="Например: БПЛА, антитеррор, интервью">
+          </div>
+
+          <div class="field">
+            <label>Короткое описание</label>
+            <textarea name="excerpt" id="excerpt" placeholder="Краткий текст для карточки новости"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Текст статьи</label>
+            <textarea class="body-textarea" name="body" id="body" placeholder="Полный текст статьи" required></textarea>
+          </div>
+
+          <div class="field">
+            <label>Статус</label>
+            <select name="status" id="status">
+              <option value="published">Опубликовано</option>
+              <option value="draft">Черновик</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Главная картинка новости</label>
+            <input name="cover" id="cover" type="file" accept="image/*">
+            <div class="hint">Если редактируете новость и не выбираете новую картинку — старая картинка останется.</div>
+            <div class="preview" id="coverPreview"></div>
+          </div>
+
+          <div class="field">
+            <label>Дополнительные фотографии</label>
+            <input name="gallery" id="gallery" type="file" accept="image/*" multiple>
+            <div class="hint">Можно выбрать несколько фотографий для галереи внутри статьи.</div>
+            <div class="preview" id="galleryPreview"></div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn" type="submit" id="saveBtn">Опубликовать</button>
+            <button class="btn light" type="button" id="resetBtn">Очистить</button>
+          </div>
+
+          <div class="status" id="formStatus"></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="tabs">
+          <button class="tab active" type="button" data-tab="news">Все новости</button>
+          <button class="tab" type="button" data-tab="consultations">Заявки</button>
+        </div>
+
+        <div id="newsTab">
+          <h2>Все новости</h2>
+          <div class="list" id="newsList">
+            <div class="empty">Загружаем новости...</div>
+          </div>
+        </div>
+
+        <div id="consultationsTab" style="display:none">
+          <h2>Заявки на консультацию</h2>
+          <div id="consultationsList">
+            <div class="empty">Загружаем заявки...</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = 'https://mao-unhesitative-greedily.ngrok-free.dev';
+    const API_HEADERS = {'ngrok-skip-browser-warning':'true'};
+    const SITE_URL = 'https://rvtvtytatv-code.github.io/plaksin-pro1/';
+    const tokenKey = 'plaksin_admin_token';
+
+    const $ = id => document.getElementById(id);
+
+    const loginScreen = $('loginScreen');
+    const app = $('app');
+    const loginForm = $('loginForm');
+    const loginStatus = $('loginStatus');
+    const logoutBtn = $('logoutBtn');
+
+    const newsForm = $('newsForm');
+    const formTitle = $('formTitle');
+    const formStatus = $('formStatus');
+    const saveBtn = $('saveBtn');
+    const resetBtn = $('resetBtn');
+    const newsList = $('newsList');
+    const consultationsList = $('consultationsList');
+    const coverInput = $('cover');
+    const galleryInput = $('gallery');
+    const coverPreview = $('coverPreview');
+    const galleryPreview = $('galleryPreview');
+
+    let token = localStorage.getItem(tokenKey) || '';
+    let allNews = [];
+    let editingNews = null;
+
+    function headers(extra = {}){
+      return {
+        ...API_HEADERS,
+        ...extra,
+        ...(token ? { Authorization: 'Bearer ' + token } : {})
+      };
+    }
+
+    function setStatus(el, text, type = ''){
+      el.className = 'status ' + type;
+      el.textContent = text || '';
+    }
+
+    function today(){
+      return new Date().toISOString().slice(0,10);
+    }
+
+    function fmtDate(d){
+      try { return new Date(d).toLocaleDateString('ru-RU'); }
+      catch { return d || ''; }
+    }
+
+    function escapeHtml(s){
+      return String(s || '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+      }[m]));
+    }
+
+    function image(src){
+      if(!src) return './news-placeholder.jpg';
+      if(String(src).startsWith('http')) return src;
+      return src;
+    }
+
+    async function api(path, options = {}){
+      const finalOptions = {
+        ...options,
+        headers: {
+          ...API_HEADERS,
+          ...(options.headers || {})
+        }
+      };
+
+      const res = await fetch(API_BASE + path, finalOptions);
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? await res.json() : await res.text();
+
+      if(!res.ok){
+        const message = typeof data === 'object' ? (data.error || data.message || 'Ошибка запроса') : data;
+        throw new Error(message);
+      }
+
+      return data;
+    }
+
+    function showApp(){
+      loginScreen.style.display = 'none';
+      app.style.display = 'block';
+      $('date').value = today();
+      loadNews();
+      loadConsultations();
+    }
+
+    function showLogin(){
+      loginScreen.style.display = 'flex';
+      app.style.display = 'none';
+    }
+
+    if(token){
+      showApp();
+    }else{
+      showLogin();
+    }
+
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      setStatus(loginStatus, 'Входим...');
+      const body = Object.fromEntries(new FormData(loginForm));
+
+      try{
+        const data = await api('/api/login', {
+          method:'POST',
+          headers:{'Content-Type':'application/json', ...API_HEADERS},
+          body:JSON.stringify(body)
+        });
+
+        token = data.token || data.jwt || data.accessToken || '';
+        if(!token) throw new Error('Backend не вернул токен авторизации');
+
+        localStorage.setItem(tokenKey, token);
+        setStatus(loginStatus, 'Готово', 'ok');
+        showApp();
+      }catch(err){
+        setStatus(
+          loginStatus,
+          err.message === 'Failed to fetch'
+            ? 'Не удалось подключиться к backend/ngrok. Проверьте, что npm start и ngrok запущены, а ссылка backend актуальна.'
+            : (err.message || 'Ошибка входа'),
+          'error'
+        );
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem(tokenKey);
+      token = '';
+      showLogin();
+    });
+
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const tab = btn.dataset.tab;
+        $('newsTab').style.display = tab === 'news' ? 'block' : 'none';
+        $('consultationsTab').style.display = tab === 'consultations' ? 'block' : 'none';
+
+        if(tab === 'consultations') loadConsultations();
+        if(tab === 'news') loadNews();
+      });
+    });
+
+    function previewFiles(input, box){
+      box.innerHTML = '';
+      Array.from(input.files || []).forEach(file => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.onload = () => URL.revokeObjectURL(img.src);
+        box.appendChild(img);
+      });
+    }
+
+    coverInput.addEventListener('change', () => previewFiles(coverInput, coverPreview));
+    galleryInput.addEventListener('change', () => previewFiles(galleryInput, galleryPreview));
+
+    function resetForm(){
+      editingNews = null;
+      formTitle.textContent = 'Новая публикация';
+      saveBtn.textContent = 'Опубликовать';
+      newsForm.reset();
+      $('oldSlug').value = '';
+      $('date').value = today();
+      coverPreview.innerHTML = '';
+      galleryPreview.innerHTML = '';
+      setStatus(formStatus, '');
+    }
+
+    resetBtn.addEventListener('click', resetForm);
+
+    function fillForm(n){
+      editingNews = n;
+      formTitle.textContent = 'Редактирование новости';
+      saveBtn.textContent = 'Сохранить изменения';
+
+      $('oldSlug').value = n.id || n.slug || '';
+      $('date').value = n.date ? new Date(n.date).toISOString().slice(0,10) : today();
+      $('title').value = n.title || '';
+      $('topic').value = n.topic || '';
+      $('excerpt').value = n.excerpt || '';
+      $('body').value = n.body || '';
+      $('status').value = n.status || 'published';
+
+      coverPreview.innerHTML = n.cover ? `<img src="${image(n.cover)}" alt="">` : '';
+      galleryPreview.innerHTML = (n.gallery || []).map(src => `<img src="${image(src)}" alt="">`).join('');
+
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    async function loadNews(){
+      try{
+        const data = await api('/api/news');
+        allNews = Array.isArray(data) ? data : [];
+
+        if(!allNews.length){
+          newsList.innerHTML = '<div class="empty">Пока нет новостей.</div>';
+          return;
+        }
+
+        newsList.innerHTML = allNews.map(n => `
+          <article class="news-item">
+            <img class="news-img" src="${image(n.cover)}" alt="" onerror="this.style.display='none'">
+            <div>
+              <div class="news-meta">
+                ${fmtDate(n.date)}
+                · ${escapeHtml(n.topic || 'Без темы')}
+                <span class="badge">${n.status === 'draft' ? 'Черновик' : 'Опубликовано'}</span>
+              </div>
+              <div class="news-title">${escapeHtml(n.title)}</div>
+              <div class="news-excerpt">${escapeHtml(n.excerpt || String(n.body || '').slice(0,140))}...</div>
+              <div class="item-actions">
+                <button class="btn light small" type="button" onclick="editNews('${n.id || n.slug}')">Редактировать</button>
+                <button class="btn danger small" type="button" onclick="deleteNews('${n.id || n.slug}')">Удалить</button>
+              </div>
+            </div>
+          </article>
+        `).join('');
+      }catch(err){
+        newsList.innerHTML = `<div class="empty">Ошибка загрузки новостей: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    window.editNews = async function(key){
+      try{
+        let n = allNews.find(item => String(item.id) === String(key) || String(item.slug) === String(key));
+
+        if(!n || !n.body){
+          const found = allNews.find(item => String(item.id) === String(key) || String(item.slug) === String(key));
+          const readKey = found && found.slug ? found.slug : key;
+          n = await api('/api/news/' + encodeURIComponent(readKey));
+        }
+
+        fillForm(n);
+      }catch(err){
+        alert('Не удалось открыть новость: ' + err.message);
+      }
+    };
+
+    window.deleteNews = async function(key){
+      if(!confirm('Удалить эту новость?')) return;
+
+      const n = allNews.find(item => String(item.id) === String(key) || String(item.slug) === String(key));
+
+      const variants = [];
+      if(n && n.id) variants.push(String(n.id));
+      if(key) variants.push(String(key));
+      if(n && n.slug) variants.push(String(n.slug));
+
+      try{
+        let deleted = false;
+        let lastError = null;
+
+        for(const value of [...new Set(variants)]){
+          try{
+            await api('/api/news/' + encodeURIComponent(value), {
+              method:'DELETE',
+              headers:headers()
+            });
+
+            deleted = true;
+            break;
+          }catch(e){
+            lastError = e;
+          }
+        }
+
+        if(!deleted){
+          throw lastError || new Error('Новость не найдена');
+        }
+
+        if(editingNews && n && String(editingNews.id) === String(n.id)){
+          resetForm();
+        }
+
+        await loadNews();
+      }catch(err){
+        alert('Не удалось удалить: ' + (err.message || 'Новость не найдена'));
+      }
+    };
+
+    newsForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      setStatus(formStatus, 'Сохраняем...');
+      saveBtn.disabled = true;
+
+      const fd = new FormData(newsForm);
+      const oldSlug = fd.get('oldSlug');
+
+      if(!coverInput.files.length){
+        fd.delete('cover');
+      }
+
+      if(!galleryInput.files.length){
+        fd.delete('gallery');
+      }
+
+      fd.delete('oldSlug');
+
+      try{
+        if(oldSlug){
+          try{
+            await api('/api/news/' + encodeURIComponent(oldSlug), {
+              method:'PUT',
+              headers:headers(),
+              body:fd
+            });
+          }catch(updateErr){
+            await api('/api/news/' + encodeURIComponent(oldSlug), {
+              method:'DELETE',
+              headers:headers()
+            });
+            await api('/api/news', {
+              method:'POST',
+              headers:headers(),
+              body:fd
+            });
+          }
+        }else{
+          await api('/api/news', {
+            method:'POST',
+            headers:headers(),
+            body:fd
+          });
+        }
+
+        setStatus(formStatus, 'Новость сохранена', 'ok');
+        resetForm();
+        await loadNews();
+      }catch(err){
+        setStatus(formStatus, err.message || 'Ошибка сохранения', 'error');
+      }finally{
+        saveBtn.disabled = false;
+      }
+    });
+
+    async function loadConsultations(){
+      try{
+        const data = await api('/api/consultations', {
+          headers:headers()
+        });
+
+        const items = Array.isArray(data) ? data : [];
+
+        if(!items.length){
+          consultationsList.innerHTML = '<div class="empty">Пока нет заявок.</div>';
+          return;
+        }
+
+        consultationsList.innerHTML = items.map(c => `
+          <div class="consult-card">
+            <b>${escapeHtml(c.name || 'Без имени')}</b>
+            <small>${fmtDate(c.createdAt || c.date || Date.now())} · ${escapeHtml(c.format || 'Формат не указан')}</small>
+            <p><b style="display:inline;font-size:14px">Контакт:</b> ${escapeHtml(c.contact || '')}</p>
+            <p>${escapeHtml(c.message || 'Без сообщения')}</p>
+          </div>
+        `).join('');
+      }catch(err){
+        consultationsList.innerHTML = `<div class="empty">Ошибка загрузки заявок: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
